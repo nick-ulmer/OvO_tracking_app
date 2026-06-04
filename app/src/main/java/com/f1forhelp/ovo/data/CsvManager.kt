@@ -8,8 +8,7 @@ import java.io.IOException
 import java.time.Instant
 import java.time.ZoneId
 
-object CsvManager {
-
+object CsvManager { // CSV: Comma-separated values
     fun saveBleedEvents(context: Context) {
         val folder = context.getExternalFilesDir(null)
         if (!folder!!.exists()) folder.mkdir()

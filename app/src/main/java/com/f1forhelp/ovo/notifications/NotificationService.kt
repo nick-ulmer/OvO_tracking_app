@@ -33,8 +33,8 @@ import java.util.concurrent.TimeUnit
 object NotificationService {
 
     @SuppressLint("MissingPermission")
-    fun scheduleAllNotifications(context: Context) {
-        if (ContextCompat.checkSelfPermission(context, android.Manifest.permission.POST_NOTIFICATIONS)
+    fun scheduleAllNotifications(context: Context) { // Used when notifications are enabled or when "Reset Scheduled Notifications button is pressed.
+        if (ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS)
             != PackageManager.PERMISSION_GRANTED
         ) {
             AppManager.instance.popupMessage(context,"Notifications permission denied! \nCannot schedule notifications.")
@@ -84,13 +84,13 @@ object NotificationService {
         Log.d("notifications", "cycle.predictionDateMs: $nextStartMs")
 
         if (delay <= 0) {
-            showNotification(context, notificationObject.name)
+            showNotification(context, notificationObject.name, notificationObject.notificationMessage())
             return
         }
 
         val request = OneTimeWorkRequestBuilder<CycleNotificationWorker>()
             .setInitialDelay(delay, TimeUnit.MILLISECONDS)
-            .setInputData(workDataOf("uniqueName" to notificationObject.name))
+            .setInputData(workDataOf("uniqueName" to notificationObject.name, "message" to notificationObject.notificationMessage()))
             .build()
 
         WorkManager.getInstance(context).enqueueUniqueWork(
@@ -102,11 +102,11 @@ object NotificationService {
     }
 
     @RequiresPermission(Manifest.permission.POST_NOTIFICATIONS)
-    fun showNotification(context: Context, uniqueName: String) {
+    fun showNotification(context: Context, uniqueName: String, message: String) {
         val notification = NotificationCompat.Builder(context, CHANNEL_ID)
             .setSmallIcon(android.R.drawable.ic_dialog_info)
-            .setContentTitle("Cycle Reminder")
-            .setContentText("Your predicted cycle is approaching")
+            .setContentTitle(uniqueName)
+            .setContentText(message)
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
             .setAutoCancel(true)
             .build()
@@ -178,7 +178,7 @@ object NotificationService {
             if (givePopup) {
                 // Switch to Main thread for UI
                 withContext(Dispatchers.Main) {
-                    AppManager.instance.popupMessage(context,"$scheduled")
+                    AppManager.instance.popupMessage(context,"Scheduled Notifications: " + scheduled.count().toString())
                 }
             }
         }
@@ -192,8 +192,9 @@ class CycleNotificationWorker(
 
     @RequiresPermission(Manifest.permission.POST_NOTIFICATIONS)
     override fun doWork(): Result {
-        val uniqueName = inputData.getString("uniqueName") ?: "default"
-        NotificationService.showNotification(applicationContext, uniqueName)
+        val uniqueName = inputData.getString("uniqueName") ?: "Cycle Reminder"
+        val message = inputData.getString("message") ?: "Your predicted cycle is approaching."
+        NotificationService.showNotification(applicationContext, uniqueName, message)
         return Result.success()
     }
 }

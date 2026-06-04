@@ -66,20 +66,21 @@ fun MenuNotifications(navController: NavController) {
             .statusBarsPadding()
             .navigationBarsPadding()
     ) {
-        TopButtons(navController)
+        TopButtons(navController, onClick = {
+            // Schedule notifications (if able), then exit menu (if able).
+            if (NotificationSettings.enabled.value) {
+                NotificationService.scheduleAllNotifications(context)
+            }
+            if (navController.previousBackStackEntry != null) {
+                navController.popBackStack()
+            }
+        })
         Spacer(modifier = Modifier.height(16.dp))
 
         Column(modifier = Modifier
             .fillMaxSize()
             .padding(16.dp)
         ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Button(
-                    modifier=Modifier.fillMaxWidth(),
-                    onClick = { NotificationService.scheduleAllNotifications(context) }) {Text("Reset Scheduled Notifications")
-                }
-            }
-            Spacer(modifier = Modifier.height(16.dp))
 
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text("Enable Notifications", modifier = Modifier.weight(1f))

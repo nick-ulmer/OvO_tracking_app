@@ -61,12 +61,12 @@ fun MenuBackup(navController: NavController) {
             horizontalArrangement = Arrangement.spacedBy(10.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Button(
+            /*Button(
                 modifier = Modifier.weight(1f),
                 onClick = { CsvManager.saveBleedEvents(context) }
             ) {
                 Text("*Backup Data*\n(convenience test button)")
-            }
+            }*/
 
 
             val context = LocalContext.current

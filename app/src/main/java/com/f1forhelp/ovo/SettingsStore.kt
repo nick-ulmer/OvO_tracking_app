@@ -24,9 +24,40 @@ data class NotificationObject(
     val enabled: Boolean, // Currently being used or not
     val type: NotificationType, // How the value is used
     val value: Double // Relative time before OR after predicted bleed event
-)
+) {
+    fun notificationMessage(): String {
+        return when (type) {
+            NotificationType.DAY_OF ->
+                "Your cycle is predicted to start today."
+
+            NotificationType.MAD -> {
+                val coverage = madCoveragePercent(value)
+                "You are now within ±$value median absolute deviation(s) of the predicted cycle start. Roughly $coverage% of your historical cycles have fallen within this range."
+            }
+
+            NotificationType.DAYS ->
+                "Your predicted cycle is approaching in $value day(s)."
+
+            NotificationType.OVO_DAY ->
+                "Your predicted ovulation day is today."
+        }
+    }
+    fun madCoveragePercent(mads: Double): Int {
+        return when {
+            mads < 0.75 -> 26   // about 0.5 MAD
+            mads < 1.25 -> 50   // about 1 MAD
+            mads < 1.75 -> 69   // about 1.5 MAD
+            mads < 2.25 -> 82   // about 2 MAD
+            mads < 2.75 -> 91   // about 2.5 MAD
+            else -> 96          // about 3 MAD
+        }
+    }
+}
 enum class NotificationType {
-    DAYS, MAD, DAY_OF, OVO_DAY
+    DAYS, // Days from PREDICTED BLEED EVENT
+    MAD, // median average deviations from PREDICTED BLEED EVENT
+    DAY_OF, // Day of PREDICTED BLEED EVENT
+    OVO_DAY // Day of predicted ovulation
 }
 
 object SettingsStore {

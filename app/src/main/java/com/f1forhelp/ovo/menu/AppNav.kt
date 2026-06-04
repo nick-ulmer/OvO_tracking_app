@@ -35,10 +35,5 @@ fun AppNav() {
             MenuViewData(navController)
         }
         //endregion
-
-
-        /*composable("settings") {
-            MenuSettings(navController)
-        }*/
     }
 }
